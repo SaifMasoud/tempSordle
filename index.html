@@ -1,0 +1,111 @@
+<html>
+<head>
+    <style type="text/css">
+        #gameGrid {
+    display: grid;
+    grid-template-rows: auto;
+    padding: 5px
+}
+
+.word {
+    padding-left: 10px;
+    letter-spacing: 38px;
+    width: 270px;
+    font-size: xx-large;
+    border: 0;
+    background-image: linear-gradient(to left, black 70%, rgba(255, 255, 255, 0) 0%);
+    background-position: bottom;
+    background-size: 50px 1px;
+    background-repeat: repeat-x;
+    background-position-x: 35px;
+    outline : none;
+}
+
+.green {
+    color: green
+}
+.yellow {
+    color: red;
+}
+  
+    </style>
+    <title>Sordle</title>
+</head>
+<body>
+    <div class="sordle">
+        <div id="gameGrid">
+            <div class="word" id='w1' maxlength=5 contenteditable=true></div>
+            <div class="word" id='w2' maxlength=5 contenteditable=true></div>
+            <div class="word" id='w3' maxlength=5 contenteditable=true></div>
+            <div class="word" id='w4' maxlength=5 contenteditable=true></div>
+            <div class="word" id='w5' maxlength=5 contenteditable=true></div>
+        </div>
+        <div id="inputs">
+            <button id="guess">Send Guess</button>
+            <label for="gid">Game ID: </label><input type="text" id="gid">
+            <label for="pid">Player ID: </label><input type="text" id="pid">
+            <button id="newGame">New Game</button>
+        </div>
+        <textarea id="cons"></textarea>
+    </div>
+</body>
+
+<script type="text/javascript">
+    URL = 'http://saifmasoud.pythonanywhere.com/sordle/api/v1.0/'
+TRY = 1
+_temp_h = null
+tarea = elm('cons')
+
+function elm(id) {
+    return document.getElementById(id)
+}
+
+function main() {
+    elm('newGame').addEventListener('click', newGame)
+    elm('guess').addEventListener('click', guess)
+}
+
+function gid() {return elm('gid').value}
+
+async function guess() {
+    w = elm('w' + TRY)
+    resp = await get(URL + 'guess/' + gid() + '/1/' + w.innerHTML)
+    ++TRY
+    // Coloring:
+    g = new Set(resp.greens)
+    y = new Set(resp.yellows)
+    word = w.innerHTML
+    w.innerHTML=""
+    spns = coloredSpans(word, g, y)
+    spns.forEach(s => w.appendChild(s))
+    
+}
+
+function coloredSpans(word, greens, ys) {
+    r = [];
+    for (let i=0; i<word.length; ++i) {
+        spn = document.createElement('span')
+        spn.innerHTML = word[i]
+        if (greens.has(i)) {spn.className += 'green'}
+        else if (ys.has(i)) {spn.className += 'yellow'}
+        else{spn.className += 'grey'}
+        r.push(spn)
+    }
+    return r
+}
+
+function newGame() {
+    get(URL + 'create/5/5/' + elm('gid').value)
+}
+
+async function get(url) {
+    ret = null
+    await fetch(url).then(r => r.json()).then(jsonR => {console.log(jsonR); ret=jsonR; tarea.value += JSON.stringify(jsonR)+'\n';})
+    return ret
+}
+
+main()
+</script>
+
+<sty
+</html>
